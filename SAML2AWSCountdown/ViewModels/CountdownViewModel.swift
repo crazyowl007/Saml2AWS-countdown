@@ -5,10 +5,12 @@ final class CountdownViewModel: ObservableObject {
     @Published var credentials: SAMLCredentials?
     @Published var menuBarText: String = "SAML: --"
     @Published var sessionState: SessionState = .unknown
+    @Published var refreshState: RefreshState = .idle
 
     private var timer: Timer?
     private var fileWatcher: CredentialsFileWatcher?
     private let notificationManager = NotificationManager.shared
+    private let loginService = SAML2AWSLoginService()
 
     init() {
         loadCredentials()
@@ -23,6 +25,32 @@ final class CountdownViewModel: ObservableObject {
 
     func refresh() {
         loadCredentials()
+    }
+
+    func refreshCredentials() {
+        guard refreshState == .idle else { return }
+
+        loginService.login(
+            onStateChange: { [weak self] state in
+                self?.refreshState = state
+            },
+            completion: { [weak self] success in
+                if success {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        self?.refreshState = .idle
+                    }
+                } else {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                        self?.refreshState = .idle
+                    }
+                }
+            }
+        )
+    }
+
+    func cancelRefresh() {
+        loginService.cancel()
+        refreshState = .idle
     }
 
     private func loadCredentials() {

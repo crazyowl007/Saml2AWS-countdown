@@ -50,6 +50,11 @@ struct MenuContentView: View {
 
             Divider()
 
+            // Refresh button
+            refreshSection
+
+            Divider()
+
             // Settings & actions
             Toggle("Launch at Login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { newValue in
@@ -72,6 +77,55 @@ struct MenuContentView: View {
             }
         }
         .padding()
-        .frame(width: 260)
+        .frame(width: 280)
+    }
+
+    @ViewBuilder
+    private var refreshSection: some View {
+        switch viewModel.refreshState {
+        case .idle:
+            Button(action: { viewModel.refreshCredentials() }) {
+                HStack {
+                    Image(systemName: "arrow.clockwise")
+                    Text("Refresh Session")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .controlSize(.large)
+
+        case .refreshing(let status):
+            HStack {
+                ProgressView()
+                    .controlSize(.small)
+                Text(status)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Button("Cancel") { viewModel.cancelRefresh() }
+                    .controlSize(.small)
+            }
+
+        case .success:
+            HStack {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+                Text("Session refreshed!")
+                    .font(.caption)
+            }
+
+        case .failed(let error):
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.red)
+                    Text("Refresh failed")
+                        .font(.caption)
+                }
+                Text(error)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(3)
+            }
+        }
     }
 }

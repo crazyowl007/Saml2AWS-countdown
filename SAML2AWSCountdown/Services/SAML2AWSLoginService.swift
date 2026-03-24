@@ -9,7 +9,6 @@ enum RefreshState: Equatable {
 
 final class SAML2AWSLoginService {
     private let saml2awsPath = "/opt/homebrew/bin/saml2aws"
-    private let targetMFAIdentifier = "PUSH MFA authentication"
 
     private var childPid: pid_t = 0
     private var masterFd: Int32 = -1

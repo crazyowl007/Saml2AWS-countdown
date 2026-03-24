@@ -23,10 +23,6 @@ final class CountdownViewModel: ObservableObject {
         fileWatcher = nil
     }
 
-    func refresh() {
-        loadCredentials()
-    }
-
     func refreshCredentials() {
         guard refreshState == .idle else { return }
 
